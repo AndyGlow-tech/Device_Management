@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05080a;
+  --surface: #0d1614;
+  --foreground: #dff7ef;
+  --muted: #7ea89c;
+  --border: #17332c;
+  --accent: #2dfbc4;
+  --accent-foreground: #04120e;
+  --accent-glow: rgba(45, 251, 196, 0.45);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  /* Monospace-forward throughout, not just serial numbers. */
+  --font-sans: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(45, 251, 196, 0.025) 0px,
+    rgba(45, 251, 196, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+@utility glow {
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+@utility glow-sm {
+  box-shadow: 0 0 6px var(--accent-glow);
+}
