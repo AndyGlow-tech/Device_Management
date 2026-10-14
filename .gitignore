@@ -52,6 +52,11 @@ grover-devices*.json
 # Personio employee directory export -- real names/emails/IDs for the team.
 extraction_scripts/personio-employees.json
 extraction_scripts/personio-employees.sql
-/dist/
-.vinext/
-.cloudflare/
+
+# Cloudflare (OpenNext adapter) -- build output and local wrangler state.
+# .dev.vars holds real secrets locally (Supabase URL/key), never commit it.
+/.open-next/
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

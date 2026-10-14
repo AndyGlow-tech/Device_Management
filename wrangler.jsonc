@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Must match the Worker name already registered for this project in the
+  // Cloudflare dashboard (Workers & Pages) -- not package.json's "name".
+  // A mismatch here is what broke the first deploy: the self-reference
+  // binding below pointed at a Worker that doesn't exist.
+  "name": "device-management",
+  "compatibility_date": "2026-10-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": ".open-next/worker.js",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "device-management"
+    }
+  ],
+  // OpenNext wires this up regardless of whether next/image is used in app
+  // code (this app currently doesn't) -- included for parity with what the
+  // CI run's own auto-migration actually deployed.
+  "images": {
+    "binding": "IMAGES"
+  }
+}

@@ -28,7 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    ".cloudflare/types",
     "**/*.mts"
   ],
   "exclude": ["node_modules"]

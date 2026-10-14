@@ -46,34 +46,45 @@ Cloud Console.
 
 ### Cloudflare Workers (alternative)
 
-The project is also set up to run on Cloudflare Workers via
-[vinext](https://github.com/cloudflare/vinext) — the original `next dev` /
-`next build` / `npm run dev` scripts are untouched, so this is additive, not
-a replacement.
+The project is also set up to run on Cloudflare Workers, via the
+[OpenNext](https://opennext.js.org/cloudflare) adapter — deployed
+automatically by Cloudflare Workers Builds on every push to `main`. The
+original `next dev` / `next build` / `npm run dev` scripts are untouched, so
+this is additive, not a replacement.
 
-- `npm run dev:vinext` — local dev server on Vite (port 3001)
-- `npm run build:vinext` — production build (`.cloudflare/output/`, gitignored)
-- `npm run start:vinext` — preview the built Worker locally
-- `npm run deploy:vinext` — deploy to Cloudflare Workers (requires `cf login`
-  or `wrangler login` first)
+- `npm run deploy` — build with OpenNext, then `wrangler deploy`
+- `npm run preview` — build and preview the Worker locally (`wrangler dev`)
 
-Config lives in `vite.config.ts` (the vinext + `@cloudflare/vite-plugin`
-Vite plugins) and `cloudflare.config.ts` (the Worker's name, compatibility
-date/flags, and the `ASSETS` binding) — no `wrangler.jsonc` needed, this
-project uses the newer `cf` CLI config format. `compatibility_flags:
-["nodejs_compat"]` is required since `exceljs` (used for reading uploaded
-`.xlsx` files) and `@supabase/ssr` rely on Node builtins (`Buffer`, etc.).
+**Cloudflare dashboard settings** (Workers & Pages → this project →
+Settings → Build) must have:
+- Deploy command: `npm run deploy` (not the dashboard's own default
+  `npx wrangler deploy` — without the OpenNext build step first, there's
+  nothing for wrangler to deploy; `npm run deploy` runs both).
+- Environment variables: `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` (same two as everywhere else).
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as
-Cloudflare Workers environment variables/secrets, and add the Workers
-production URL as an additional authorized redirect URI in both Google
-Cloud Console and Supabase's Auth → URL Configuration (the OAuth callback
-itself still goes through Supabase's own `.../auth/v1/callback`, unchanged).
+Config lives in `wrangler.jsonc` (Worker name, compatibility date/flags,
+`ASSETS`/`IMAGES` bindings, and the `WORKER_SELF_REFERENCE` service binding
+— whose `service` value **must** match `name` exactly, or deploys fail with
+"Worker ... was not found") and `open-next.config.ts` (cache strategy — left
+at the default no-op `"dummy"` cache rather than the R2-backed option, since
+this app reads everything live from Supabase per request and provisioning
+an R2 bucket isn't necessary). `compatibility_flags: ["nodejs_compat"]` is
+required since `exceljs` (used for reading uploaded `.xlsx` files) and
+`@supabase/ssr` rely on Node builtins (`Buffer`, etc.).
 
-`exceljs` is the single largest dependency in the Worker bundle (~950 KB
-uncompressed in the `parse-spreadsheet` chunk, ~260 KB gzipped) — worth
-keeping an eye on against your Workers plan's script size limit if other
-large dependencies get added later.
+Add the Workers production URL as an additional authorized redirect URI in
+both Google Cloud Console and Supabase's Auth → URL Configuration (the OAuth
+callback itself still goes through Supabase's own `.../auth/v1/callback`,
+unchanged).
+
+For local testing against the Workers runtime, copy `.dev.vars.example` to
+`.dev.vars` (gitignored — holds real secrets) before running `npm run
+preview`.
+
+`src/proxy.ts` (the auth gate) runs as Cloudflare's "Node.js middleware" —
+per OpenNext's own build output, that's "experimental ... and not officially
+maintained by OpenNext maintainers." It works, but keep an eye on it.
 
 ## Managing access
 
