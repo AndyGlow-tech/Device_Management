@@ -37,10 +37,43 @@ Auth, Row Level Security), deployed on Vercel.
 
 ## Deploying
 
+### Vercel
+
 Deploy to Vercel with the same two environment variables
 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`), and add the
 production callback URL as an additional authorized redirect URI in Google
 Cloud Console.
+
+### Cloudflare Workers (alternative)
+
+The project is also set up to run on Cloudflare Workers via
+[vinext](https://github.com/cloudflare/vinext) — the original `next dev` /
+`next build` / `npm run dev` scripts are untouched, so this is additive, not
+a replacement.
+
+- `npm run dev:vinext` — local dev server on Vite (port 3001)
+- `npm run build:vinext` — production build (`.cloudflare/output/`, gitignored)
+- `npm run start:vinext` — preview the built Worker locally
+- `npm run deploy:vinext` — deploy to Cloudflare Workers (requires `cf login`
+  or `wrangler login` first)
+
+Config lives in `vite.config.ts` (the vinext + `@cloudflare/vite-plugin`
+Vite plugins) and `cloudflare.config.ts` (the Worker's name, compatibility
+date/flags, and the `ASSETS` binding) — no `wrangler.jsonc` needed, this
+project uses the newer `cf` CLI config format. `compatibility_flags:
+["nodejs_compat"]` is required since `exceljs` (used for reading uploaded
+`.xlsx` files) and `@supabase/ssr` rely on Node builtins (`Buffer`, etc.).
+
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as
+Cloudflare Workers environment variables/secrets, and add the Workers
+production URL as an additional authorized redirect URI in both Google
+Cloud Console and Supabase's Auth → URL Configuration (the OAuth callback
+itself still goes through Supabase's own `.../auth/v1/callback`, unchanged).
+
+`exceljs` is the single largest dependency in the Worker bundle (~950 KB
+uncompressed in the `parse-spreadsheet` chunk, ~260 KB gzipped) — worth
+keeping an eye on against your Workers plan's script size limit if other
+large dependencies get added later.
 
 ## Managing access
 

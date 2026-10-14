@@ -52,3 +52,6 @@ grover-devices*.json
 # Personio employee directory export -- real names/emails/IDs for the team.
 extraction_scripts/personio-employees.json
 extraction_scripts/personio-employees.sql
+/dist/
+.vinext/
+.cloudflare/
